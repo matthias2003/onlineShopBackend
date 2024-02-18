@@ -1,11 +1,10 @@
 const express = require("express");
 const { getData } = require("./db.js");
 
-const port = 3000;
-
+const port = 3001;
 const app = express();
 
-app.get("/", async ( req, res)  => {
+app.get("/api", async ( req, res)  => {
     const data = await getData();
     res.send(data);
 })

@@ -3,15 +3,17 @@ const { MongoClient } = require("mongodb");
 const url = "mongodb+srv://admin:nzXp02N2myDA1mfb@shop.rdhilhf.mongodb.net/?retryWrites=true&w=majority";
 
 const client = new MongoClient(url);
-
+const database = client.db("Shop");
 const getData = async () => {
-    const database = client.db("Shop");
-    const col = database.collection("Products")
-    const data = await col.findOne({brand:"Nike"});
-    return data;
-    // for await (const item of data) {
-    //     console.log(item)
-    // }
+    const col  = database.collection("Products")
+    const result = col.find();
+    return result.toArray();
+}
+
+const searchItemsByName = async (query) => {
+    const col  = database.collection("Products")
+    const result = col.find(query);
+    return result.toArray();
 }
 
 module.exports = { getData };
