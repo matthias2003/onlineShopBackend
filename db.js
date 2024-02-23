@@ -6,7 +6,13 @@ const client = new MongoClient(url);
 const database = client.db("Shop");
 const getData = async () => {
     const col  = database.collection("Products")
-    const result = col.find();
+    const result = col.find().sort({_id: -1}).limit(4);
+    return result.toArray();
+}
+
+const getBestsellers = async () => {
+    const col  = database.collection("Products");
+    const result = col.find().sort({sold:-1}).limit(4)
     return result.toArray();
 }
 
@@ -16,4 +22,4 @@ const searchItemsByName = async (query) => {
     return result.toArray();
 }
 
-module.exports = { getData };
+module.exports = { getData, getBestsellers };
