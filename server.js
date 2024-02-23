@@ -8,7 +8,7 @@ const corsOptions = {
     origin: ["127.0.0.1:3000","https://online-shop.maciejkloda.pl"]
 }
 
-app.use(cors());
+app.use(cors(corsOptions));
 app.get("/api", async ( req, res)  => {
     const data = await getData();
     res.send(data);
