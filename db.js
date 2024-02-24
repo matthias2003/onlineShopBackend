@@ -1,18 +1,8 @@
 const mongoose = require('mongoose');
-const {ObjectId, Double} = require("mongodb");
+const productsSchema = require('./productsSchema.js');
 
 const url = "mongodb+srv://admin:nzXp02N2myDA1mfb@shop.rdhilhf.mongodb.net/Shop?retryWrites=true&w=majority";
 
-const productsSchema = new mongoose.Schema({
-    _id : ObjectId,
-    name : String,
-    color : String,
-    img : String,
-    gender : String,
-    brand : String,
-    price : String,
-    sold : Number
-})
 
 mongoose.connect(url);
 const products = mongoose.model("Products", productsSchema, "Products");
