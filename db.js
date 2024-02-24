@@ -1,25 +1,32 @@
-const { MongoClient } = require("mongodb");
+const mongoose = require('mongoose');
+const {ObjectId, Double} = require("mongodb");
 
-const url = "mongodb+srv://admin:nzXp02N2myDA1mfb@shop.rdhilhf.mongodb.net/?retryWrites=true&w=majority";
+const url = "mongodb+srv://admin:nzXp02N2myDA1mfb@shop.rdhilhf.mongodb.net/Shop?retryWrites=true&w=majority";
 
-const client = new MongoClient(url);
-const database = client.db("Shop");
+const productsSchema = new mongoose.Schema({
+    _id : ObjectId,
+    name : String,
+    color : String,
+    img : String,
+    gender : String,
+    brand : String,
+    price : String,
+    sold : Number
+})
+
+mongoose.connect(url);
+const products = mongoose.model("Products", productsSchema, "Products");
 const getData = async () => {
-    const col  = database.collection("Products")
-    const result = col.find().sort({_id: -1}).limit(4);
-    return result.toArray();
+    return products.find().sort({_id: -1}).limit(4);
 }
 
 const getBestsellers = async () => {
-    const col  = database.collection("Products");
-    const result = col.find().sort({sold:-1}).limit(4)
-    return result.toArray();
+    return products.find().sort({sold:-1}).limit(4)
 }
 
-const searchItemsByName = async (query) => {
-    const col  = database.collection("Products")
-    const result = col.find(query);
-    return result.toArray();
-}
+module.exports = { getData, getBestsellers};
 
-module.exports = { getData, getBestsellers };
+
+
+
+
