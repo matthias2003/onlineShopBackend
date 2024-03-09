@@ -13,13 +13,15 @@ const productsSchema = new mongoose.Schema({
 })
 
 const userCredentialsSchema = new mongoose.Schema({
-    _id:ObjectId,
-    name: String,
-    surname: String,
-    email:String,
-    password:String,
-    dateOfBirth: Date
-
+    _id: ObjectId,
+    name: {type: String, required: true},
+    surname: {type: String, required: true},
+    email: {type: String, required: true, unique:true},
+    password: { type: String, required: true },
+    dateOfBirth: { type: Date, required: true },
 });
 
-module.exports = { productsSchema, userCredentialsSchema };
+const Products = mongoose.model("Products", productsSchema, "Products");
+const User = mongoose.model("UsersCredentials",userCredentialsSchema,"UsersCredentials");
+
+module.exports = { Products, User };

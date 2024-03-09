@@ -1,6 +1,5 @@
 const bcrypt = require("bcrypt");
 const { registerUser } = require("./db.js")
-const { ObjectId } = require("mongodb");
 const loginHandler = async (loginData, userData ) => {
     let returnedData = {};
     if (userData) {
@@ -15,9 +14,10 @@ const loginHandler = async (loginData, userData ) => {
 
 const registerHandler = async (registerData) => {
     // miejsce na walidację danych, sprawdzenie siły hasła itp
-    const hashedPassword = await bcrypt.hash(registerData.password,10);
-    registerData._id = new ObjectId();
-    await registerUser(registerData);
+    const { email, name, surname, password, dateOfBirth } = registerData;
+    const hashedPassword = await bcrypt.hash(password,10);
+    
+    await registerUser(email, name, surname, hashedPassword, dateOfBirth);
 
 }
 

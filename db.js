@@ -1,35 +1,37 @@
 const mongoose = require('mongoose');
-const { productsSchema, userCredentialsSchema} = require('./databseSchemas.js');
+const { Products, User } = require('./databseSchemas.js');
 
 const url = "mongodb+srv://admin:nzXp02N2myDA1mfb@shop.rdhilhf.mongodb.net/Shop?retryWrites=true&w=majority";
 
-mongoose.connect(url);
+mongoose.connect(url); // wrzucić to w funkcje jakąś
 
 // data db
 
-const products = mongoose.model("Products", productsSchema, "Products");
 
 const getData = async () => {
-    return products.find().sort({_id: -1}).limit(4);
+    return Products.find().sort({_id: -1}).limit(4);
 }
 
 const getBestsellers = async () => {
-    return products.find().sort({sold:-1}).limit(4)
+    return Products.find().sort({sold:-1}).limit(4)
 }
 
 // login db
 
-const usersCredentials = mongoose.model("UsersCredentials",userCredentialsSchema,"UsersCredentials")
 
 const loginUser = async (usernameInfo) => {
-    return usersCredentials.findOne({email:usernameInfo});
+    return User.findOne({email:usernameInfo});
 }
 
-const registerUser = async (userData) => {
+const registerUser = async (email, name, surname, hashedPassword, dateOfBirth) => {
 
-    // const user = new usersCredentials(userData);
-    console.log(userData)
-    // user.save();
+    await User.collection.insertOne({
+        name: name,
+        surname: surname,
+        email: email,
+        password: hashedPassword,
+        dateOfBirth: new Date(dateOfBirth)
+    })
 }
 
 
