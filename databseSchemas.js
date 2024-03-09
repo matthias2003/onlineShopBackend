@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb')
-const stream = require("stream");
 
 const productsSchema = new mongoose.Schema({
     _id : ObjectId,
@@ -15,8 +14,12 @@ const productsSchema = new mongoose.Schema({
 
 const userCredentialsSchema = new mongoose.Schema({
     _id:ObjectId,
-    username:String,
-    password:String
+    name: String,
+    surname: String,
+    email:String,
+    password:String,
+    dateOfBirth: Date
+
 });
 
 module.exports = { productsSchema, userCredentialsSchema };

@@ -1,8 +1,7 @@
 const mongoose = require('mongoose');
-const { productsSchema, userCredentialsSchema} = require('./productsSchema.js');
+const { productsSchema, userCredentialsSchema} = require('./databseSchemas.js');
 
 const url = "mongodb+srv://admin:nzXp02N2myDA1mfb@shop.rdhilhf.mongodb.net/Shop?retryWrites=true&w=majority";
-
 
 mongoose.connect(url);
 
@@ -23,11 +22,18 @@ const getBestsellers = async () => {
 const usersCredentials = mongoose.model("UsersCredentials",userCredentialsSchema,"UsersCredentials")
 
 const loginUser = async (usernameInfo) => {
-    return usersCredentials.findOne({username:usernameInfo});
+    return usersCredentials.findOne({email:usernameInfo});
+}
+
+const registerUser = async (userData) => {
+
+    // const user = new usersCredentials(userData);
+    console.log(userData)
+    // user.save();
 }
 
 
-module.exports = { getData, getBestsellers, loginUser };
+module.exports = { getData, getBestsellers, loginUser, registerUser };
 
 
 
