@@ -1,7 +1,8 @@
 const express = require("express");
 const cors = require("cors");
+const bcrypt = require("bcrypt")
 
-const { getData, getBestsellers } = require("./db.js");
+const { getData, getBestsellers, loginUser } = require("./db.js");
 
 const port = 3001 ;
 const app = express();
@@ -23,9 +24,21 @@ app.get("/api/bestsellers", async (req , res) => {
 })
 
 app.post("/login", async (req, res) => {
-   const data = await req.body;
-    console.log(data)
-   res.send("Ok")
+    const data = await req.body;
+    const userData = await loginUser(data.username);
+    if (userData) {
+        bcrypt.compare(data.password,userData.password, (err, result) => {
+            console.log(result);
+        })
+    } else {
+        console.log("User not found") /// zmienic na try i catch
+    }
+    // console.log(userData)
+    res.send()
 })
+
+// bcrypt.hash("admin123", 10, function(err, hash) {
+//     console.log(hash);
+// });
 
 app.listen(port);
