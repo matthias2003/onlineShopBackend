@@ -1,10 +1,12 @@
 const express = require("express");
+const dotenv = require("dotenv");
 const cors = require("cors");
-
 const { getData, getBestsellers, loginUser } = require("./db.js");
 const { loginHandler, registerHandler } = require("./loginValidation.js");
 
-const port = 3001 ;
+
+dotenv.config();
+const port = process.env.PORT || 3001 ;
 const app = express();
 const corsOptions = {
     origin: ["127.0.0.1:3000","https://online-shop.maciejkloda.pl"]
@@ -24,9 +26,7 @@ app.get("/api/bestsellers", async (req , res) => {
 })
 
 app.post("/login", async (req, res) => {
-    const loginData = await req.body;
-    const userData = await loginUser(loginData.username); // move to loginValidation
-    const response = await loginHandler(loginData,userData);
+    const response = await loginHandler(req.body);
     res.send(response)
 })
 

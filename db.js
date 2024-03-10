@@ -1,13 +1,15 @@
 const mongoose = require('mongoose');
 const { Products, User } = require('./databseSchemas.js');
+const dotenv = require("dotenv");
 
-const url = "mongodb+srv://admin:nzXp02N2myDA1mfb@shop.rdhilhf.mongodb.net/Shop?retryWrites=true&w=majority";
-
-mongoose.connect(url); // wrzucić to w funkcje jakąś
+// dotenv.config();
+// mongoose.connect(`mongodb+srv://admin:${process.env.DB_PASSWORD}@shop.rdhilhf.mongodb.net/Shop?retryWrites=true&w=majority`);
 
 // data db
-
-
+const main = async () => {
+    dotenv.config();
+    await mongoose.connect(`mongodb+srv://admin:${process.env.DB_PASSWORD}@shop.rdhilhf.mongodb.net/Shop?retryWrites=true&w=majority`);
+}
 const getData = async () => {
     return Products.find().sort({_id: -1}).limit(4);
 }
@@ -18,13 +20,11 @@ const getBestsellers = async () => {
 
 // login db
 
-
-const loginUser = async (usernameInfo) => {
-    return User.findOne({email:usernameInfo});
+const getUser = async (emailInfo) => {
+    return User.findOne({email:emailInfo});
 }
 
-const registerUser = async (email, name, surname, hashedPassword, dateOfBirth) => {
-
+const insertUser = async (email, name, surname, hashedPassword, dateOfBirth) => {
     await User.collection.insertOne({
         name: name,
         surname: surname,
@@ -34,8 +34,9 @@ const registerUser = async (email, name, surname, hashedPassword, dateOfBirth) =
     })
 }
 
+main().catch(err => console.log("Couldn't connect to database"));
 
-module.exports = { getData, getBestsellers, loginUser, registerUser };
+module.exports = { getData, getBestsellers, getUser, insertUser };
 
 
 
