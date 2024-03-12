@@ -34,7 +34,7 @@ const insertUser = async (email, name, surname, hashedPassword, dateOfBirth) => 
     })
 }
 
-main().catch(err => console.log("Couldn't connect to database"));
+main().catch(err => console.log(err));
 
 module.exports = { getData, getBestsellers, getUser, insertUser };
 
