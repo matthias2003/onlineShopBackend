@@ -3,7 +3,9 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const { getData, getBestsellers, loginUser } = require("./db.js");
 const { loginHandler, registerHandler } = require("./loginValidation.js");
+const {json} = require("express");
 
+//TODO: ADD STATUS CODES TO RESPONSES
 
 dotenv.config();
 const port = process.env.PORT || 3001 ;
@@ -31,8 +33,8 @@ app.post("/login", async (req, res) => {
 })
 
 app.post("/register", async (req, res) => {
-    const response = registerHandler(await req.body)
-    res.send(response)
+    const response = await registerHandler(req.body)
+    res.status(400).send(response)
 })
 
 

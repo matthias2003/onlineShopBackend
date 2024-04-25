@@ -2,9 +2,6 @@ const mongoose = require('mongoose');
 const { Products, User } = require('./databseSchemas.js');
 const dotenv = require("dotenv");
 
-// dotenv.config();
-// mongoose.connect(`mongodb+srv://admin:${process.env.DB_PASSWORD}@shop.rdhilhf.mongodb.net/Shop?retryWrites=true&w=majority`);
-
 // data db
 const main = async () => {
     dotenv.config();
