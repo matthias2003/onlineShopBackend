@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const { Products, User } = require('./databseSchemas.js');
 const dotenv = require("dotenv");
 
-// data db
 const main = async () => {
     dotenv.config();
     await mongoose.connect(`mongodb+srv://admin:${process.env.DB_PASSWORD}@shop.rdhilhf.mongodb.net/Shop?retryWrites=true&w=majority`);
@@ -14,8 +13,6 @@ const getData = async () => {
 const getBestsellers = async () => {
     return Products.find().sort({sold:-1}).limit(4)
 }
-
-// login db
 
 const getUser = async (emailInfo) => {
     return User.findOne({email:emailInfo});
