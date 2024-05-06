@@ -3,9 +3,11 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const { getData, getBestsellers, loginUser } = require("./db.js");
 const { json } = require("express");
-const {getUser, insertUser} = require("./db");
+const { getUser, insertUser } = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { auth } = require('./middleware/auth');
+const cookieParser = require("cookie-parser");
 
 //TODO: ADD STATUS CODES TO RESPONSES
 
@@ -22,7 +24,8 @@ const generateToken = (id) => {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cors());
+app.use(cors(corsOptions));
+app.use(cookieParser());
 app.get("/api", async ( req, res)  => {
     const data = await getData();
     res.send(data);
@@ -52,26 +55,38 @@ app.post("/login", async (req, res) => {
     } else {
         returnedData.status = false;
     }
-    res.cookie('jwt', returnedData.token, { expires: new Date(Date.now() + 90000), httpOnly: true, secure: true });
+    res.cookie('jwt', returnedData.token, { expires: new Date(Date.now() + 3600000), httpOnly: true, secure: true });
     res.send(returnedData);
 })
 
 app.post("/register", async (req, res) => {
-    const { email, name, surname, password, dateOfBirth } = registerData;
-    if (!name || !email || !password || !surname || !dateOfBirth) {
-        res.send("Not all fields are fill in"); // change to erros throw
-    }
+    const { email, name, surname, password, dateOfBirth } = req.body;
+    const passwordReg = new RegExp(/^(?=.*[0-9])(?=.*[- ?!@#$%^&*\/\\])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9- ?!@#$%^&*\/\\]{8,30}$/)
+    const emailReg = new RegExp(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
 
-    // place for data validation
-
-    if (!await getUser(email)) {
-        const hashedPassword = await bcrypt.hash(password,10);
-        await insertUser(email, name, surname, hashedPassword, dateOfBirth);
+    if (name && email && password && surname && dateOfBirth) {
+        if (!await getUser(email)) {
+            if (passwordReg.exec(password)) {
+                if (emailReg.exec(email)) {
+                    const hashedPassword = await bcrypt.hash(password,10);
+                    await insertUser(email, name, surname, hashedPassword, dateOfBirth);
+                    res.send('User successfully added');
+                } else {
+                    res.send("Invalid email")
+                }
+            } else {
+                res.send("Password doesn't fulfill requirements")
+            }
+        } else {
+            res.send("This email address is already taken");
+        }
     } else {
-        res.send("This email address is already taken"); // change to erros throw
+        res.send("Not all fields are fill in");
     }
+})
 
-    res.send('User successfully added');
+app.get("/profile",auth, (req,res) => {
+    res.send("Cos smiga");
 })
 
 
