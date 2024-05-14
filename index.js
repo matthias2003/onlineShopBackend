@@ -16,7 +16,8 @@ const port = process.env.PORT || 3001 ;
 const app = express();
 
 const corsOptions = {
-    origin: ["127.0.0.1:3000","https://online-shop.maciejkloda.pl"]
+    origin: /*http://127.0.0.1:3000'*/ "https://online-shop.maciejkloda.pl",
+    credentials: true,
 }
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_TOKEN, { expiresIn: "30d" });
@@ -44,18 +45,19 @@ app.post("/login", async (req, res) => {
 
     const userData = await getUser(loginData.email);
     let returnedData = {};
+    let token;
     if (userData && ( await bcrypt.compare(loginData.password, userData.password))) {
         returnedData = {
             status:true,
             id:userData._id,
-            token: generateToken(userData._id),
             email:userData.email,
             name:  userData.name,
         }
+        token = generateToken(userData._id)
     } else {
         returnedData.status = false;
     }
-    res.cookie('jwt', returnedData.token, { expires: new Date(Date.now() + 3600000), httpOnly: true, secure: true });
+    res.cookie('jwt', token , { expires: new Date(Date.now() + 3600000), httpOnly: true, secure: true});
     res.send(returnedData);
 })
 
@@ -85,8 +87,17 @@ app.post("/register", async (req, res) => {
     }
 })
 
+app.post("/loggedIn", auth,(req,res) => {
+    res.send(true); // TODO: change responses
+})
+
+app.post("/logout", (req,res) => {
+    res.clearCookie('jwt');
+    res.send("done");
+})
+
 app.get("/profile",auth, (req,res) => {
-    res.send("Cos smiga");
+    res.send("Working")
 })
 
 
