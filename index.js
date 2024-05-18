@@ -7,6 +7,7 @@ const { getUser, insertUser } = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { auth } = require('./middleware/auth');
+const corsOptions = require("./config/corsOrigins")
 const cookieParser = require("cookie-parser");
 
 //TODO: ADD STATUS CODES TO RESPONSES
@@ -14,13 +15,8 @@ const cookieParser = require("cookie-parser");
 dotenv.config();
 const port = process.env.PORT || 3001 ;
 const app = express();
-
-const corsOptions = {
-    origin: /*http://127.0.0.1:3000'*/ "https://online-shop.maciejkloda.pl",
-    credentials: true,
-}
-const generateToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_TOKEN, { expiresIn: "30d" });
+const generateToken = (id,secret, expires) => {
+    return jwt.sign({ id }, secret, { expiresIn: `${expires}` });
 };
 
 app.use(express.json());
@@ -44,21 +40,15 @@ app.post("/login", async (req, res) => {
     }
 
     const userData = await getUser(loginData.email);
-    let returnedData = {};
-    let token;
+    let accessToken,refreshToken;
     if (userData && ( await bcrypt.compare(loginData.password, userData.password))) {
-        returnedData = {
-            status:true,
-            id:userData._id,
-            email:userData.email,
-            name:  userData.name,
-        }
-        token = generateToken(userData._id)
+        accessToken = generateToken(userData._id,process.env.ACESS_TOKEN_SECRET,"10min")
+        refreshToken = generateToken(userData._id,process.env.REFRESH_TOKEN_SECRET,"7d")
+        res.cookie('jwt', refreshToken , { maxAge: 604800, httpOnly: true, secure: true});
+        res.json( { status:true, accessToken });
     } else {
-        returnedData.status = false;
+        res.status(401).json({status:false});
     }
-    res.cookie('jwt', token , { expires: new Date(Date.now() + 3600000), httpOnly: true, secure: true});
-    res.send(returnedData);
 })
 
 app.post("/register", async (req, res) => {
@@ -94,10 +84,6 @@ app.post("/loggedIn", auth,(req,res) => {
 app.post("/logout", (req,res) => {
     res.clearCookie('jwt');
     res.send("done");
-})
-
-app.get("/profile",auth, (req,res) => {
-    res.send("Working")
 })
 
 
