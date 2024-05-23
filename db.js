@@ -18,19 +18,32 @@ const getUser = async (emailInfo) => {
     return User.findOne({email:emailInfo});
 }
 
-const insertUser = async (email, name, surname, hashedPassword, dateOfBirth) => {
+const getRefreshToken = async (token) => {
+    return User.findOne({refreshToken: token})
+}
+
+const updateRefreshToken = async (email,token) => {
+    return User.updateOne({email:email},{refreshToken: token})
+}
+
+const deleteRefreshToken = async (token) => {
+    return User.updateOne({refreshToken: token},{$unset:{ refreshToken:"" }});
+}
+
+const insertUser = async (email, name, surname, hashedPassword, dateOfBirth,refreshToken) => {
     await User.collection.insertOne({
         name: name,
         surname: surname,
         email: email,
         password: hashedPassword,
-        dateOfBirth: new Date(dateOfBirth)
+        dateOfBirth: new Date(dateOfBirth),
+        refreshToken: refreshToken
     })
 }
 
 main().catch(err => console.log(err));
 
-module.exports = { getData, getBestsellers, getUser, insertUser };
+module.exports = { getData, getBestsellers, getUser, insertUser, getRefreshToken, updateRefreshToken, deleteRefreshToken };
 
 
 

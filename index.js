@@ -3,10 +3,11 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const { getData, getBestsellers, loginUser } = require("./db.js");
 const { json } = require("express");
-const { getUser, insertUser } = require("./db");
+const { getUser, insertUser, getRefreshToken, updateRefreshToken, deleteRefreshToken } = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { auth } = require('./middleware/auth');
+const { auth } = require("./middleware/auth");
+const { credentials } = require("./middleware/credentials")
 const corsOptions = require("./config/corsOrigins")
 const cookieParser = require("cookie-parser");
 
@@ -23,6 +24,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors(corsOptions));
 app.use(cookieParser());
+app.use(credentials);
 app.get("/api", async ( req, res)  => {
     const data = await getData();
     res.send(data);
@@ -42,9 +44,10 @@ app.post("/login", async (req, res) => {
     const userData = await getUser(loginData.email);
     let accessToken,refreshToken;
     if (userData && ( await bcrypt.compare(loginData.password, userData.password))) {
-        accessToken = generateToken(userData._id,process.env.ACESS_TOKEN_SECRET,"10min")
-        refreshToken = generateToken(userData._id,process.env.REFRESH_TOKEN_SECRET,"7d")
-        res.cookie('jwt', refreshToken , { maxAge: 604800, httpOnly: true, secure: true});
+        accessToken = generateToken(userData.email,process.env.ACCESS_TOKEN_SECRET,"10min")
+        refreshToken = generateToken(userData.email,process.env.REFRESH_TOKEN_SECRET,"7d")
+        await updateRefreshToken(userData.email,refreshToken);
+        res.cookie('jwt', refreshToken , { maxAge: 604800000, httpOnly: true, secure: true, sameSite:"none"});
         res.json( { status:true, accessToken });
     } else {
         res.status(401).json({status:false});
@@ -77,13 +80,30 @@ app.post("/register", async (req, res) => {
     }
 })
 
+app.get("/refresh", async (req,res)=> {
+    const refreshToken = req.cookies?.jwt;
+    if (!refreshToken) return res.sendStatus(401)
+    const data = await getRefreshToken(refreshToken);
+    if(!data) res.sendStatus(403);
+    jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET,(err,decoded) => {
+        if(err) res.sendStatus(403);
+        const accessToken = generateToken(decoded.email,process.env.ACCESS_TOKEN_SECRET,"10min");
+        res.json({ accessToken })
+    })
+})
+
 app.post("/loggedIn", auth,(req,res) => {
     res.send(true); // TODO: change responses
 })
 
-app.post("/logout", (req,res) => {
-    res.clearCookie('jwt');
-    res.send("done");
+app.post("/logout", async (req,res) => {
+    const cookies = req.cookies;
+    if(!cookies?.jwt) res.sendStatus(204);
+    else {
+        await deleteRefreshToken(cookies?.jwt);
+        res.clearCookie('jwt',{httpOnly: true, secure: true, sameSite:"none"});
+        res.send("logged out");
+    }
 })
 
 

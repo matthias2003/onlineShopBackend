@@ -1,8 +1,4 @@
-const whiteList = [
-    'https://online-shop.maciejkloda.pl',
-    'http://127.0.0.1:3000',
-    'http://localhost:3000'
-];
+const { whiteList } = require("./origins")
 
 const corsOptions = {
     origin: (origin, callback) => {

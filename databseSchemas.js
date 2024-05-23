@@ -19,6 +19,7 @@ const userCredentialsSchema = new mongoose.Schema({
     email: {type: String, required: true, unique:true},
     password: { type: String, required: true },
     dateOfBirth: { type: Date, required: true },
+    refreshToken: {type:String}
 });
 
 const Products = mongoose.model("Products", productsSchema, "Products");
