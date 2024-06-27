@@ -87,7 +87,7 @@ app.get("/refresh", async (req,res)=> {
     if(!data) res.sendStatus(403);
     jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET,(err,decoded) => {
         if(err) res.sendStatus(403);
-        const accessToken = generateToken(decoded.email,process.env.ACCESS_TOKEN_SECRET,"10min");
+        const accessToken = generateToken(decoded.id,process.env.ACCESS_TOKEN_SECRET,"10min");
         res.json({ accessToken })
     })
 })
