@@ -109,9 +109,8 @@ app.post("/logout", async (req,res) => {
 app.post("/user" , async (req,res) => {
     const { id } = req.body;
     const data = await getUser(id)
-    console.log(data)
     const resData = {
-        email:data.email,
+        email: data.email,
         name: data.name,
         surname: data.surname,
         profilePicture:data.profilePicture

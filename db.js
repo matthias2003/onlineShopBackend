@@ -37,7 +37,8 @@ const insertUser = async (email, name, surname, hashedPassword, dateOfBirth,refr
         email: email,
         password: hashedPassword,
         dateOfBirth: new Date(dateOfBirth),
-        refreshToken: refreshToken
+        refreshToken: refreshToken,
+        profilePicture:"https://sneakerstore.fra1.digitaloceanspaces.com/user-avatars/avatar-default.svg"
     })
 }
 
