@@ -47,7 +47,7 @@ app.post("/login", async (req, res) => {
         accessToken = generateToken(userData.email,process.env.ACCESS_TOKEN_SECRET,"10min")
         refreshToken = generateToken(userData.email,process.env.REFRESH_TOKEN_SECRET,"7d")
         await updateRefreshToken(userData.email,refreshToken);
-        res.cookie('jwt', refreshToken , { maxAge: 604800000, httpOnly: true, secure: true, sameSite:"none"});
+        res.cookie('jwt', refreshToken , { maxAge: 604800000, httpOnly: true, secure: true, sameSite:"none", partitioned:true});
         res.json( { status:true, accessToken });
     } else {
         res.status(401).json({status:false});
