@@ -2,7 +2,6 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const { getData, getBestsellers, loginUser } = require("./db.js");
-const { json } = require("express");
 const { getUser, insertUser, getRefreshToken, updateRefreshToken, deleteRefreshToken } = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -10,7 +9,7 @@ const { auth } = require("./middleware/auth");
 const { credentials } = require("./middleware/credentials")
 const corsOptions = require("./config/corsOrigins")
 const cookieParser = require("cookie-parser");
-
+const { z } = require("zod");
 //TODO: ADD STATUS CODES TO RESPONSES
 
 dotenv.config();
@@ -58,19 +57,33 @@ app.post("/register", async (req, res) => {
     const { email, name, surname, password, dateOfBirth } = req.body;
     const passwordReg = new RegExp(/^(?=.*[0-9])(?=.*[- ?!@#$%^&*\/\\])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9- ?!@#$%^&*\/\\]{8,30}$/)
     const emailReg = new RegExp(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+    const names = name.split(' ');
+    const surnames = surname.split(' ');
+    const date =  z.coerce.date();
+
+    let birthDate;
+    try {
+        birthDate = date.parse(new Date(dateOfBirth));
+    } catch (err) {
+        console.log(err)
+    }
 
     if (name && email && password && surname && dateOfBirth) {
         if (!await getUser(email)) {
+            if (names.length <= 3 && surnames.length <= 2) {
             if (passwordReg.exec(password)) {
                 if (emailReg.exec(email)) {
                     const hashedPassword = await bcrypt.hash(password,10);
-                    await insertUser(email, name, surname, hashedPassword, dateOfBirth);
+                    await insertUser(email, name, surname, hashedPassword, birthDate);
                     res.send('User successfully added');
                 } else {
                     res.send("Invalid email")
                 }
             } else {
                 res.send("Password doesn't fulfill requirements")
+            }
+            } else {
+                res.send("Name or surname is too long")
             }
         } else {
             res.send("This email address is already taken");
@@ -106,7 +119,7 @@ app.post("/logout", async (req,res) => {
     }
 })
 
-app.post("/user" , async (req,res) => {
+app.post("/user" , auth, async (req,res) => {
     const { id } = req.body;
     const data = await getUser(id)
     const resData = {
