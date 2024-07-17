@@ -6,12 +6,17 @@ const main = async () => {
     dotenv.config();
     await mongoose.connect(`mongodb+srv://admin:${process.env.DB_PASSWORD}@shop.rdhilhf.mongodb.net/Shop?retryWrites=true&w=majority`);
 }
+
 const getData = async () => {
     return Products.find().sort({_id: -1}).limit(4);
 }
 
 const getBestsellers = async () => {
-    return Products.find().sort({sold:-1}).limit(4)
+    return Products.find().sort({sold:-1}).limit(4);
+}
+
+const getDataGender = async (gender) => {
+    return Products.find({gender:gender});
 }
 
 const getUser = async (emailInfo) => {
@@ -44,7 +49,16 @@ const insertUser = async (email, name, surname, hashedPassword, dateOfBirth,refr
 
 main().catch(err => console.log(err));
 
-module.exports = { getData, getBestsellers, getUser, insertUser, getRefreshToken, updateRefreshToken, deleteRefreshToken };
+module.exports = {
+    getData,
+    getBestsellers,
+    getUser,
+    insertUser,
+    getRefreshToken,
+    updateRefreshToken,
+    deleteRefreshToken,
+    getDataGender
+};
 
 
 
