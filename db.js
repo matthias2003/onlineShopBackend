@@ -11,6 +11,11 @@ const getData = async () => {
     return Products.find().sort({_id: -1}).limit(4);
 }
 
+const getDataByName = async (name) => {
+    const regex = new RegExp(name, 'i')
+    return Products.find({name: {$regex: regex}})
+}
+
 const getBestsellers = async () => {
     return Products.find().sort({sold:-1}).limit(4);
 }
@@ -57,7 +62,8 @@ module.exports = {
     getRefreshToken,
     updateRefreshToken,
     deleteRefreshToken,
-    getDataGender
+    getDataGender,
+    getDataByName
 };
 
 
