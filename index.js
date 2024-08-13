@@ -2,7 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const { getData, getBestsellers, loginUser } = require("./db.js");
-const { getUser, insertUser, getRefreshToken, updateRefreshToken, deleteRefreshToken, getDataGender, getDataByName } = require("./db");
+const { getUser, insertUser, getRefreshToken, updateRefreshToken, deleteRefreshToken, getDataGender, getDataByName, getDataById } = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { auth } = require("./middleware/auth");
@@ -46,6 +46,11 @@ app.post("/api/gender", async ( req, res)  => {
 
 app.post("/api/search", async (req , res) => {
     const data = await getDataByName(req.body.name);
+    res.send(data);
+})
+
+app.get("/api/item/:id", async (req , res) => {
+    const data = await getDataById(req.params.id);
     res.send(data);
 })
 
