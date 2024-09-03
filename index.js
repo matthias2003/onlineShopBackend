@@ -168,16 +168,18 @@ app.post("/newsletter", async (req, res ) => {
     const client = new mailtrap.MailtrapClient({ token: token });
     const sender = { name: "Sneaker Store", email: senderEmail };
 
-    client.send({
+    try {
+        const result = await client.send({
             from: sender,
             to: [{ email: recipient }],
             template_uuid: "ae54ea25-0d9a-4e4f-8d47-a5e103b5eba5",
-           template_variables: {
-           }
+            template_variables: {
+            }
         })
-        .then(console.log)
-        .catch(console.error);
-    res.send("Email sent");
+        res.send(JSON.stringify(result))
+    } catch (err) {
+        res.send(err.message);
+    }
 })
 
 app.listen(port);
