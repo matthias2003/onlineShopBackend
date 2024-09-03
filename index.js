@@ -10,6 +10,15 @@ const { credentials } = require("./middleware/credentials")
 const corsOptions = require("./config/corsOrigins")
 const cookieParser = require("cookie-parser");
 const { z } = require("zod");
+const mailtrap = require("mailtrap");
+
+
+const Recipient = require("mailersend").Recipient;
+const EmailParams = require("mailersend").EmailParams;
+const MailerSend = require("mailersend").MailerSend;
+const Sender = require("mailersend").Sender;
+
+
 //TODO: ADD STATUS CODES TO RESPONSES
 
 dotenv.config();
@@ -151,5 +160,24 @@ app.post("/user" , auth, async (req,res) => {
     res.json(resData);
 })
 
+
+app.post("/newsletter", async (req, res ) => {
+    const token = process.env.EMAIL_API_KEY;
+    const senderEmail = "laced-up@maciejkloda.pl";
+    const recipient = req.body.email
+    const client = new mailtrap.MailtrapClient({ token: token });
+    const sender = { name: "Sneaker Store", email: senderEmail };
+
+    client.send({
+            from: sender,
+            to: [{ email: recipient }],
+            template_uuid: "ae54ea25-0d9a-4e4f-8d47-a5e103b5eba5",
+           template_variables: {
+           }
+        })
+        .then(console.log)
+        .catch(console.error);
+    res.send("Email sent");
+})
 
 app.listen(port);
