@@ -163,7 +163,7 @@ app.post("/user" , auth, async (req,res) => {
 
 app.post("/newsletter", async (req, res ) => {
     const token = process.env.EMAIL_API_KEY;
-    const senderEmail = "laced-up@maciejkloda.pl";
+    const senderEmail = process.env.EMAIL_SENDER;
     const recipient = req.body.email
     const client = new mailtrap.MailtrapClient({ token: token });
     const sender = { name: "Sneaker Store", email: senderEmail };
