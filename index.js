@@ -2,7 +2,9 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const { getData, getBestsellers, loginUser } = require("./db.js");
-const { getUser, insertUser, getRefreshToken, updateRefreshToken, deleteRefreshToken, getDataGender, getDataByName, getDataById } = require("./db");
+const { getUser, insertUser, getRefreshToken, updateRefreshToken, deleteRefreshToken, getDataGender, getDataByName, getDataById,
+    verifyUser
+} = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { auth } = require("./middleware/auth");
@@ -11,6 +13,7 @@ const corsOptions = require("./config/corsOrigins")
 const cookieParser = require("cookie-parser");
 const { z } = require("zod");
 const mailtrap = require("mailtrap");
+const e = require("express");
 
 
 const Recipient = require("mailersend").Recipient;
@@ -24,6 +27,7 @@ const Sender = require("mailersend").Sender;
 dotenv.config();
 const port = process.env.PORT || 3001 ;
 const app = express();
+
 const generateToken = (id,secret, expires) => {
     return jwt.sign({ id }, secret, { expiresIn: `${expires}` });
 };
@@ -71,14 +75,18 @@ app.post("/login", async (req, res) => {
 
     const userData = await getUser(loginData.email);
     let accessToken,refreshToken;
-    if (userData && ( await bcrypt.compare(loginData.password, userData.password))) {
-        accessToken = generateToken(userData.email,process.env.ACCESS_TOKEN_SECRET,"10min")
-        refreshToken = generateToken(userData.email,process.env.REFRESH_TOKEN_SECRET,"7d")
-        await updateRefreshToken(userData.email,refreshToken);
-        res.cookie('jwt', refreshToken , { maxAge: 604800000, httpOnly: true, secure: true, sameSite:"none", partitioned:true});
-        res.json( { status:true, accessToken });
+    if (userData && userData.verified) {
+        if (userData && ( await bcrypt.compare(loginData.password, userData.password))) {
+            accessToken = generateToken(userData.email,process.env.ACCESS_TOKEN_SECRET,"10min")
+            refreshToken = generateToken(userData.email,process.env.REFRESH_TOKEN_SECRET,"7d")
+            await updateRefreshToken(userData.email, refreshToken);
+            res.cookie('jwt', refreshToken , { maxAge: 604800000, httpOnly: true, secure: true, sameSite:"none", partitioned:true});
+            res.json( { status:true, accessToken });
+        } else {
+            res.status(401).json({status:false});
+        }
     } else {
-        res.status(401).json({status:false});
+        res.status(401).json({status:"User not verified"});
     }
 })
 
@@ -104,7 +112,28 @@ app.post("/register", async (req, res) => {
                 if (emailReg.exec(email)) {
                     const hashedPassword = await bcrypt.hash(password,10);
                     await insertUser(email, name, surname, hashedPassword, birthDate);
-                    res.send('User successfully added');
+
+                    const key = process.env.EMAIL_API_KEY;
+                    const senderEmail = process.env.EMAIL_SENDER;
+                    const client = new mailtrap.MailtrapClient({ token: key });
+                    const sender = { name: "Sneaker Store", email: senderEmail };
+                    const emailToken = generateToken(email, process.env.EMAIL_TOKEN_SECRET, "48h");
+
+                    try {
+                       const result = await client.send({
+                            from: sender,
+                            to: [{email:email}],
+                            template_uuid: "1108a623-eb36-4477-9fc7-aa458a10cd0e",
+                            template_variables: {
+                                "name": name,
+                                "token":emailToken
+                            }
+                          })
+                        res.send('User successfully added');
+                    } catch (err) {
+                        res.send(err.message);
+                    }
+
                 } else {
                     res.send("Invalid email")
                 }
@@ -120,6 +149,17 @@ app.post("/register", async (req, res) => {
     } else {
         res.send("Not all fields are fill in");
     }
+})
+
+app.get("/register/account-confirmation/:token", async (req,res) => {
+    const token = req.params.token;
+    let email;
+    jwt.verify( token, process.env.EMAIL_TOKEN_SECRET,(err, decoded)=>{
+        if (err) return res.status(403).send(err);
+        email = decoded.id
+    });
+    await verifyUser(email);
+    res.send(email)
 })
 
 app.get("/refresh", async (req,res)=> {

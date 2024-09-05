@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 const { ObjectId } = require('mongodb')
 
 const productsSchema = new mongoose.Schema({
-    _id : ObjectId,
     name : String,
     color : String,
     img : String,
@@ -13,15 +12,15 @@ const productsSchema = new mongoose.Schema({
 })
 
 const userCredentialsSchema = new mongoose.Schema({
-    _id: ObjectId,
     name: {type: String, required: true},
+    verified : { type: Boolean, default: false, required: true },
     surname: {type: String, required: true},
     email: {type: String, required: true, unique:true},
     password: { type: String, required: true },
     dateOfBirth: { type: Date, required: true },
     refreshToken: {type:String},
     profilePicture:{type:String}
-});
+}, { versionKey: false });
 
 const Products = mongoose.model("Products", productsSchema, "Products");
 const User = mongoose.model("UsersCredentials",userCredentialsSchema,"UsersCredentials");

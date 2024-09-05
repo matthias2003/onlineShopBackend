@@ -37,7 +37,7 @@ const getRefreshToken = async (token) => {
 }
 
 const updateRefreshToken = async (email,token) => {
-    return User.updateOne({email:email},{refreshToken: token})
+    return User.updateOne({email:email},{ $set: { refreshToken:token } })
 }
 
 const deleteRefreshToken = async (token) => {
@@ -45,15 +45,18 @@ const deleteRefreshToken = async (token) => {
 }
 
 const insertUser = async (email, name, surname, hashedPassword, dateOfBirth,refreshToken) => {
-    await User.collection.insertOne({
+    await User.create({
         name: name,
         surname: surname,
         email: email,
         password: hashedPassword,
         dateOfBirth: new Date(dateOfBirth),
-        refreshToken: refreshToken,
         profilePicture:"https://sneakerstore.fra1.digitaloceanspaces.com/user-avatars/avatar-default.svg"
     })
+}
+
+const verifyUser = async ( email, ) => {
+    await User.collection.updateOne({ email: email }, { $set: { verified:true } })
 }
 
 main().catch(err => console.log(err));
@@ -68,7 +71,8 @@ module.exports = {
     deleteRefreshToken,
     getDataGender,
     getDataByName,
-    getDataById
+    getDataById,
+    verifyUser
 };
 
 
