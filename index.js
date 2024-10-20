@@ -35,6 +35,7 @@ const generateToken = (id,secret, expires) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(cookieParser());
 app.use(credentials);
 
@@ -111,7 +112,6 @@ app.post("/register", async (req, res) => {
             if (passwordReg.exec(password)) {
                 if (emailReg.exec(email)) {
                     const hashedPassword = await bcrypt.hash(password,10);
-                    await insertUser(email, name, surname, hashedPassword, birthDate);
 
                     const key = process.env.EMAIL_API_KEY;
                     const senderEmail = process.env.EMAIL_SENDER;
@@ -126,9 +126,10 @@ app.post("/register", async (req, res) => {
                             template_uuid: "1108a623-eb36-4477-9fc7-aa458a10cd0e",
                             template_variables: {
                                 "name": name,
-                                "token":emailToken
+                                "token": emailToken
                             }
                           })
+                        await insertUser(email, name, surname, hashedPassword, birthDate);
                         res.send('User successfully added');
                     } catch (err) {
                         res.send(err.message);
@@ -154,6 +155,7 @@ app.post("/register", async (req, res) => {
 app.get("/register/account-confirmation/:token", async (req,res) => {
     const token = req.params.token;
     let email;
+    console.log(token)
     jwt.verify( token, process.env.EMAIL_TOKEN_SECRET,(err, decoded)=>{
         if (err) return res.status(403).send(err);
         email = decoded.id
