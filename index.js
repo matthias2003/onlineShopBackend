@@ -120,7 +120,7 @@ app.post("/register", async (req, res) => {
                     const emailToken = generateToken(email, process.env.EMAIL_TOKEN_SECRET, "48h");
 
                     try {
-                       const result = await client.send({
+                       await client.send({
                             from: sender,
                             to: [{email:email}],
                             template_uuid: "1108a623-eb36-4477-9fc7-aa458a10cd0e",
@@ -129,6 +129,7 @@ app.post("/register", async (req, res) => {
                                 "token": emailToken
                             }
                           })
+
                         await insertUser(email, name, surname, hashedPassword, birthDate);
                         res.send('User successfully added');
                     } catch (err) {
