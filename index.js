@@ -3,7 +3,8 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const { getData, getBestsellers, loginUser } = require("./db.js");
 const { getUser, insertUser, getRefreshToken, updateRefreshToken, deleteRefreshToken, getDataGender, getDataByName, getDataById,
-    verifyUser
+    verifyUser,
+    updateUser
 } = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -13,7 +14,9 @@ const corsOptions = require("./config/corsOrigins")
 const cookieParser = require("cookie-parser");
 const { z } = require("zod");
 const mailtrap = require("mailtrap");
-const e = require("express");
+const multer = require('multer');
+const { list, put } = require('@vercel/blob');
+const { createReadStream, unlink} = require("node:fs");
 
 
 const Recipient = require("mailersend").Recipient;
@@ -31,6 +34,8 @@ const app = express();
 const generateToken = (id,secret, expires) => {
     return jwt.sign({ id }, secret, { expiresIn: `${expires}` });
 };
+
+const upload = multer({ dest: 'images/' });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -162,7 +167,7 @@ app.get("/register/account-confirmation/:token", async (req,res) => {
         email = decoded.id
     });
     await verifyUser(email);
-    res.send(email)
+    res.send("You have successfully verified!").redirect("/");
 })
 
 app.get("/refresh", async (req,res)=> {
@@ -203,6 +208,36 @@ app.post("/user" , auth, async (req,res) => {
     res.json(resData);
 })
 
+
+
+app.post("/user/update" , upload.single('image'),async (req,res) => {
+    try {
+        const email = req.body.email;
+        console.log(email)
+        const { path, originalname } = req.file;
+        const blobName = Date.now()+"-"+originalname;
+        const fileStream = createReadStream(path);
+        const { url } = await put(`avatars/${blobName}`, fileStream, { access: 'public',token: process.env.BLOB_READ_WRITE_TOKEN });
+
+        unlink(path, (err) => {
+            if (err) {
+                console.error(`Couldn't delete file: ${err}`);
+            } else {
+                console.log(`File ${path} has been deleted`);
+            }
+        });
+
+        const data = await list({prefix: 'avatars/'})
+        data.blobs.map( async ( item) => {
+            if (item.pathname.split("/")[1] === blobName) {
+                await updateUser(email,item.url); // TODO: WILL ITERATE THROUGH ALL OF ITEMS WITH SAME PATHNAME AND WILL CHANGE URL MULTIPLE TIMES
+            }
+        })
+        res.json({ success: true, url });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to upload image' });
+    }
+})
 
 app.post("/newsletter", async (req, res ) => {
     const token = process.env.EMAIL_API_KEY;

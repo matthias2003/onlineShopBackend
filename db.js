@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { Products, User } = require('./databseSchemas.js');
 const dotenv = require("dotenv");
+const stream = require("node:stream");
 
 const main = async () => {
     dotenv.config();
@@ -26,6 +27,10 @@ const getBestsellers = async () => {
 
 const getDataGender = async (gender) => {
     return Products.find({gender:gender});
+}
+
+const updateUser = async (email,url) => {
+    return User.updateOne({email:email},{ $set: { profilePicture:url } })
 }
 
 const getUser = async (emailInfo) => {
@@ -66,6 +71,7 @@ module.exports = {
     getBestsellers,
     getUser,
     insertUser,
+    updateUser,
     getRefreshToken,
     updateRefreshToken,
     deleteRefreshToken,
