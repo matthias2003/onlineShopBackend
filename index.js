@@ -40,6 +40,7 @@ const upload = multer({ dest: 'images/' });
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(cookieParser());
 app.use(credentials);
 
@@ -209,7 +210,7 @@ app.post("/user" , auth, async (req,res) => {
 
 
 
-app.post("/user/update" , upload.single('image'),async (req,res) => {
+app.post("/user/update" , upload.single('tmp'),async (req,res) => {
     try {
         const email = req.body.email;
         console.log(email)
