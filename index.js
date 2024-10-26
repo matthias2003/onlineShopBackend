@@ -35,8 +35,6 @@ const generateToken = (id,secret, expires) => {
     return jwt.sign({ id }, secret, { expiresIn: `${expires}` });
 };
 
-const upload = multer({ dest: 'images/' });
-
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cors(corsOptions));
@@ -210,7 +208,7 @@ app.post("/user" , auth, async (req,res) => {
 
 
 
-app.post("/user/update" , upload.single('tmp'),async (req,res) => {
+app.post("/user/update" ,async (req,res) => {
     try {
         const email = req.body.email;
         console.log(email)
