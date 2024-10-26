@@ -24,6 +24,9 @@ const EmailParams = require("mailersend").EmailParams;
 const MailerSend = require("mailersend").MailerSend;
 const Sender = require("mailersend").Sender;
 
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
+
 
 //TODO: ADD STATUS CODES TO RESPONSES
 
@@ -208,24 +211,15 @@ app.post("/user" , auth, async (req,res) => {
 
 
 
-app.post("/user/update" ,async (req,res) => {
+app.post("/user/update" , upload.single('image'), async (req,res) => {
     try {
         const email = req.body.email;
-        console.log(email)
-        const { path, originalname } = req.file;
+        const { buffer, originalname } = req.file;
         const blobName = Date.now()+"-"+originalname;
-        const fileStream = createReadStream(path);
+        const fileStream = Buffer.from(buffer).toString("utf-8");
         const { url } = await put(`avatars/${blobName}`, fileStream, { access: 'public',token: process.env.BLOB_READ_WRITE_TOKEN });
-
-        unlink(path, (err) => {
-            if (err) {
-                console.error(`Couldn't delete file: ${err}`);
-            } else {
-                console.log(`File ${path} has been deleted`);
-            }
-        });
-
         const data = await list({prefix: 'avatars/'})
+
         data.blobs.map( async ( item) => {
             if (item.pathname.split("/")[1] === blobName) {
                 await updateUser(email,item.url); // TODO: WILL ITERATE THROUGH ALL OF ITEMS WITH SAME PATHNAME AND WILL CHANGE URL MULTIPLE TIMES
