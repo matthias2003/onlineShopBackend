@@ -29,8 +29,12 @@ const getDataGender = async (gender) => {
     return Products.find({gender:gender});
 }
 
-const updateUser = async (email,url) => {
-    return User.updateOne({email:email},{ $set: { profilePicture:url } })
+const updateUser = async (email,url,userData) => {
+    console.log(url)
+    if (url) {
+        userData.profilePicture = url;
+    }
+    return User.updateOne({email:email},{ $set: userData })
 }
 
 const getUser = async (emailInfo) => {
@@ -56,7 +60,7 @@ const insertUser = async (email, name, surname, hashedPassword, dateOfBirth,refr
         email: email,
         password: hashedPassword,
         dateOfBirth: new Date(dateOfBirth),
-        profilePicture:"https://sneakerstore.fra1.digitaloceanspaces.com/user-avatars/avatar-default.svg"
+        profilePicture:"https://vxdod9oqkeyknlzg.public.blob.vercel-storage.com/avatars/avatar-default-lqO1mxSvUe9aS0gfn7Gr9y1INIgB9o.svg"
     })
 }
 

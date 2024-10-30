@@ -174,13 +174,19 @@ app.get("/register/account-confirmation/:token", async (req,res) => {
 app.get("/refresh", async (req,res)=> {
     const refreshToken = req.cookies?.jwt;
     if (!refreshToken) return res.sendStatus(401)
-    const data = await getRefreshToken(refreshToken);
-    if(!data) res.sendStatus(403);
-    jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET,(err,decoded) => {
-        if(err) res.sendStatus(403);
-        const accessToken = generateToken(decoded.id,process.env.ACCESS_TOKEN_SECRET,"10min");
-        res.json({ accessToken })
-    })
+    try {
+        const data = await getRefreshToken(refreshToken);
+        if(!data) res.sendStatus(403);
+        jwt.verify(refreshToken,process.env.REFRESH_TOKEN_SECRET,(err,decoded) => {
+            if(err) return res.sendStatus(403);
+            const accessToken = generateToken(decoded.id,process.env.ACCESS_TOKEN_SECRET,"10min");
+            res.json({ accessToken })
+        })
+    } catch (err) {
+        console.error("Error:", error);
+        res.sendStatus(500);
+    }
+
 })
 
 app.post("/loggedIn", auth,(req,res) => {
@@ -214,18 +220,23 @@ app.post("/user" , auth, async (req,res) => {
 app.post("/user/update" , upload.single('image'), async (req,res) => {
     try {
         const email = req.body.email;
-        const { buffer, originalname } = req.file;
-        const blobName = Date.now()+"-"+originalname;
-        const fileStream = Buffer.from(buffer).toString("utf-8");
-        const { url } = await put(`avatars/${blobName}`, fileStream, { access: 'public',token: process.env.BLOB_READ_WRITE_TOKEN });
-        const data = await list({prefix: 'avatars/'})
+        const userData = JSON.parse(req.body.userData);
+        if (req.file) {
+            const { buffer, originalname } = req.file;
+            const blobName = Date.now()+"-"+originalname;
+            const fileStream = Buffer.from(buffer).toString("utf-8");
+            const { url } = await put(`avatars/${blobName}`, fileStream, { access: 'public',token: process.env.BLOB_READ_WRITE_TOKEN });
+            const data = await list({prefix: 'avatars/'})
 
-        data.blobs.map( async ( item) => {
-            if (item.pathname.split("/")[1] === blobName) {
-                await updateUser(email,item.url); // TODO: WILL ITERATE THROUGH ALL OF ITEMS WITH SAME PATHNAME AND WILL CHANGE URL MULTIPLE TIMES
-            }
-        })
-        res.json({ success: true, url });
+            data.blobs.map( async ( item) => {
+                if (item.pathname.split("/")[1] === blobName) {
+                    await updateUser(email,item.url,userData); // TODO: WILL ITERATE THROUGH ALL OF ITEMS WITH SAME PATHNAME AND WILL CHANGE URL MULTIPLE TIMES
+                }
+            })
+        } else {
+            await updateUser(email,"",userData);
+        }
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: 'Failed to upload image' });
     }
