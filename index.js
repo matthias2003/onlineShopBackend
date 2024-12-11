@@ -24,8 +24,13 @@ const EmailParams = require("mailersend").EmailParams;
 const MailerSend = require("mailersend").MailerSend;
 const Sender = require("mailersend").Sender;
 
+const token = process.env.EMAIL_API_KEY;
+const senderEmail = process.env.EMAIL_SENDER;
+
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
+const client = new mailtrap.MailtrapClient({ token: token });
+const sender = { name: "Sneaker Store", email: senderEmail };
 
 
 //TODO: ADD STATUS CODES TO RESPONSES
@@ -216,7 +221,6 @@ app.post("/user" , auth, async (req,res) => {
 })
 
 
-
 app.post("/user/update" , upload.single('image'), async (req,res) => {
     try {
         const email = req.body.email;
@@ -261,6 +265,34 @@ app.post("/newsletter", async (req, res ) => {
     } catch (err) {
         res.send(err.message);
     }
+})
+
+app.post("/reset-password", async (req, res) => {
+    const recipient = req.body.email;
+
+    try {
+        const result = await client.send({
+            from: sender,
+            to: [{ email: recipient }],
+            template_uuid: "7b444087-5235-4e92-bbc4-f98065b12424",
+            template_variables: {
+            }
+        })
+        res.send(JSON.stringify(result))
+    } catch (err) {
+        res.send(err.message);
+    }
+})
+
+app.post("/reset-password/set", (req, res) => {
+    const password = req.body.password;
+    const passwordReg = new RegExp(/^(?=.*[0-9])(?=.*[- ?!@#$%^&*\/\\])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9- ?!@#$%^&*\/\\]{8,30}$/)
+
+    if (passwordReg.exec(password)) {
+
+    }
+
+    res.json({ status:true });
 })
 
 app.listen(port);
