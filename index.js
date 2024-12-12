@@ -2,10 +2,6 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const { getData, getBestsellers, loginUser } = require("./db.js");
-const { getUser, insertUser, getRefreshToken, updateRefreshToken, deleteRefreshToken, getDataGender, getDataByName, getDataById,
-    verifyUser,
-    updateUser
-} = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { auth } = require("./middleware/auth");
@@ -17,6 +13,19 @@ const mailtrap = require("mailtrap");
 const multer = require('multer');
 const { list, put } = require('@vercel/blob');
 const { createReadStream, unlink} = require("node:fs");
+const {
+    getUser,
+    insertUser,
+    getRefreshToken,
+    updateRefreshToken,
+    deleteRefreshToken,
+    getDataGender,
+    getDataByName,
+    getDataById,
+    verifyUser,
+    updateUser,
+    updatePassword
+} = require("./db");
 
 
 const Recipient = require("mailersend").Recipient;
@@ -284,15 +293,40 @@ app.post("/reset-password", async (req, res) => {
     }
 })
 
-app.post("/reset-password/set", (req, res) => {
-    const password = req.body.password;
+app.post("/reset-password/set", async (req, res) => {
+    const { password, confirmPassword, email } = req.body;
     const passwordReg = new RegExp(/^(?=.*[0-9])(?=.*[- ?!@#$%^&*\/\\])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9- ?!@#$%^&*\/\\]{8,30}$/)
 
-    if (passwordReg.exec(password)) {
-
+    if (!passwordReg.test(password)) {
+        return res.status(400).json({
+            status: false,
+            message: "Password does not meet complexity requirements."
+        });
     }
 
-    res.json({ status:true });
+    if (password !== confirmPassword) {
+        return res.status(400).json({
+            status: false,
+            message: "Passwords do not match."
+        });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await updatePassword(email, hashedPassword);
+
+        return res.status(200).json({
+            status: true,
+            message: "Password has been successfully updated."
+        });
+    } catch (err) {
+        console.error("Error updating password:", err);
+
+        return res.status(500).json({
+            status: false,
+            message: "An error occurred while updating the password. Please try again later."
+        });
+    }
 })
 
 app.listen(port);

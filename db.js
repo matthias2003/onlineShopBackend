@@ -30,11 +30,14 @@ const getDataGender = async (gender) => {
 }
 
 const updateUser = async (email,url,userData) => {
-    console.log(url)
     if (url) {
         userData.profilePicture = url;
     }
     return User.updateOne({email:email},{ $set: userData })
+}
+
+const updatePassword = async (email, password) => {
+    return User.updateOne({email:email},{ $set: { password: password } })
 }
 
 const getUser = async (emailInfo) => {
@@ -82,7 +85,8 @@ module.exports = {
     getDataGender,
     getDataByName,
     getDataById,
-    verifyUser
+    verifyUser,
+    updatePassword
 };
 
 
