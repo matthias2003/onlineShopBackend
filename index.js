@@ -280,11 +280,13 @@ app.post("/reset-password", async (req, res) => {
     const recipient = req.body.email;
 
     try {
+        const emailToken = generateToken(recipient,process.env.RESET_PASSWD_TOKEN_SECRET,"24h")
         const result = await client.send({
             from: sender,
             to: [{ email: recipient }],
             template_uuid: "7b444087-5235-4e92-bbc4-f98065b12424",
             template_variables: {
+               "token": emailToken
             }
         })
         res.send(JSON.stringify(result))
@@ -294,7 +296,7 @@ app.post("/reset-password", async (req, res) => {
 })
 
 app.post("/reset-password/set", async (req, res) => {
-    const { password, confirmPassword, email } = req.body;
+    const { password, confirmPassword, token } = req.body;
     const passwordReg = new RegExp(/^(?=.*[0-9])(?=.*[- ?!@#$%^&*\/\\])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9- ?!@#$%^&*\/\\]{8,30}$/)
 
     if (!passwordReg.test(password)) {
@@ -312,6 +314,12 @@ app.post("/reset-password/set", async (req, res) => {
     }
 
     try {
+        let email;
+        jwt.verify( token, process.env.RESET_PASSWD_TOKEN_SECRET,(err, decoded)=>{
+            if (err) return res.status(403).send(err);
+            email = decoded.id
+        });
+
         const hashedPassword = await bcrypt.hash(password, 10);
         await updatePassword(email, hashedPassword);
 
