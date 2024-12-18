@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const { Products, User } = require('./databseSchemas.js');
 const dotenv = require("dotenv");
-const stream = require("node:stream");
 
 const main = async () => {
     dotenv.config();

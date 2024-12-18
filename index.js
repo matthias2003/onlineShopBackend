@@ -28,11 +28,6 @@ const {
 } = require("./db");
 
 
-const Recipient = require("mailersend").Recipient;
-const EmailParams = require("mailersend").EmailParams;
-const MailerSend = require("mailersend").MailerSend;
-const Sender = require("mailersend").Sender;
-
 const token = process.env.EMAIL_API_KEY;
 const senderEmail = process.env.EMAIL_SENDER;
 
@@ -48,9 +43,6 @@ dotenv.config();
 const port = process.env.PORT || 3001 ;
 const app = express();
 
-const generateToken = (id,secret, expires) => {
-    return jwt.sign({ id }, secret, { expiresIn: `${expires}` });
-};
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -58,6 +50,11 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 app.use(cookieParser());
 app.use(credentials);
+
+const generateToken = (id,secret, expires) => {
+    return jwt.sign({ id }, secret, { expiresIn: `${expires}` });
+};
+
 
 app.get("/" , (req, res) => {
     res.json("Online shop Api")
@@ -201,10 +198,6 @@ app.get("/refresh", async (req,res)=> {
         res.sendStatus(500);
     }
 
-})
-
-app.post("/loggedIn", auth,(req,res) => {
-    res.send(true); // TODO: change responses
 })
 
 app.post("/logout", async (req,res) => {
