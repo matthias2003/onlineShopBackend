@@ -4,17 +4,15 @@ const { z, date} = require("zod");
 const mailtrap = require("mailtrap");
 const {
     getUser,
-    updateRefreshToken,
+    getRefreshToken,
+    updatePassword,
     insertUser,
     verifyUser,
-    getRefreshToken,
-    deleteRefreshToken,
-    updatePassword
-} = require("../db");
+    updateRefreshToken,
+    deleteRefreshToken } = require("../services/userService");
 
 const passwordReg = new RegExp(/^(?=.*[0-9])(?=.*[- ?!@#$%^&*\/\\])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9- ?!@#$%^&*\/\\]{8,30}$/)
 const emailReg = new RegExp(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
-
 
 const generateToken = (id,secret, expires) => {
     return jwt.sign({ id }, secret, { expiresIn: `${expires}` });
