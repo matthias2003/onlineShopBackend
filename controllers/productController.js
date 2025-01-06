@@ -1,4 +1,4 @@
-const { getData, getBestsellers, getDataGender, getDataByName, getDataById } = require("services/productService");
+const { getData, getBestsellers, getDataGender, getDataByName, getDataById } = require("../services/productService");
 
 exports.getHome = (req, res) => {
     res.status(200).json({ status: true, message: "Online shop Api" });

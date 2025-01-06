@@ -6,8 +6,6 @@ dotenv.config();
 const connectDB = async () => {
     try {
         await mongoose.connect(`mongodb+srv://admin:${process.env.DB_PASSWORD}@shop.rdhilhf.mongodb.net/Shop?retryWrites=true&w=majority`, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
         });
         console.log('MongoDB connected');
     } catch (err) {

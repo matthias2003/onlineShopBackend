@@ -1,4 +1,4 @@
-const { getUser, updateUser} = require("services/userService");
+const { getUser, updateUser} = require("../services/userService");
 const { put, list } = require("@vercel/blob");
 
 exports.getUser = async (req,res) => {
