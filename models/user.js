@@ -1,15 +1,4 @@
 const mongoose = require('mongoose');
-const { ObjectId } = require('mongodb')
-
-const productsSchema = new mongoose.Schema({
-    name : String,
-    color : String,
-    img : String,
-    gender : String,
-    brand : String,
-    price : String,
-    sold : Number
-})
 
 const userCredentialsSchema = new mongoose.Schema({
     name: {type: String, required: true},
@@ -22,7 +11,6 @@ const userCredentialsSchema = new mongoose.Schema({
     profilePicture:{type:String}
 }, { versionKey: false });
 
-const Products = mongoose.model("Products", productsSchema, "Products");
 const User = mongoose.model("UsersCredentials",userCredentialsSchema,"UsersCredentials");
 
-module.exports = { Products, User };
+module.exports = { User };
