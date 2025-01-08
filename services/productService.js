@@ -1,3 +1,5 @@
+const { Products } = require("../models/product");
+
 const getData = async () => {
     return Products.find().sort({_id: -1}).limit(4);
 }

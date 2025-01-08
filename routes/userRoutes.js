@@ -9,6 +9,6 @@ const upload = multer({ storage: storage })
 
 router.post('/',auth, getUser);
 
-router.post('/', upload.single('image'), updateUser);
+router.post('/update', upload.single('image'), updateUser);
 
 module.exports = router;

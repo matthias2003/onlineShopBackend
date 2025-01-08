@@ -1,10 +1,11 @@
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
 const express = require("express");
 const dotenv = require("dotenv");
-const cors = require("cors");
-const { credentials } = require("./middleware/credentials")
-const corsOptions = require("./config/corsOrigins")
-const cookieParser = require("cookie-parser");
+
+const { credentials } = require("./middleware/credentials");
 const connectDB = require("./config/db");
+const corsOptions = require("./config/corsOrigins");
 
 const mainRoutes = require("./routes/mainRoutes");
 const apiRoutes = require('./routes/apiRoutes');
@@ -12,13 +13,11 @@ const newsletterRoutes = require("./routes/newsletterRoutes");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 
-const port = process.env.PORT || 3001 ;
-const app = express();
-
 dotenv.config();
 
+const port = process.env.PORT || 3001 ;
+const app = express();
 connectDB();
-
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
