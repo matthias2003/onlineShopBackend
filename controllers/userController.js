@@ -1,5 +1,5 @@
 const { getUser, updateUser} = require("../services/userService");
-const { put, list } = require("@vercel/blob");
+const { put } = require("@vercel/blob");
 
 exports.getUser = async (req,res) => {
     const { id } = req.body;
@@ -34,7 +34,7 @@ exports.updateUser = async (req, res) => {
                 access: 'public',
                 token: process.env.BLOB_READ_WRITE_TOKEN
             });
-            fileUrl = url; // Ustaw URL przesłanego pliku
+            fileUrl = url;
         }
 
         await updateUser(email, fileUrl, userData);
