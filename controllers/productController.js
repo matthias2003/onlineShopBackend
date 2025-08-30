@@ -1,9 +1,5 @@
 const { getData, getBestsellers, getDataGender, getDataByName, getDataById } = require("../services/productService");
 
-exports.getHome = (req, res) => {
-    res.status(200).json({ status: true, message: "Online shop Api" });
-};
-
 exports.getAllProducts = async (req, res) => {
     try {
         const data = await getData();
